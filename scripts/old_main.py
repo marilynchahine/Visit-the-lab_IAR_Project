@@ -6,9 +6,9 @@ import sys
 from tqdm import tqdm
 
 from environment_generation import Lab_structure
-from envs import Lab_environment, Gridworld, Gridworld_one_distance, GoToHumanVision
-from envs import Lab_environment_HRI, Human, Lab_HRI_evaluation
-from play_function import play
+from E_envs import Lab_environment, Gridworld, Gridworld_one_distance, GoToHumanVision
+from E_envs import Lab_environment_HRI, Human, Lab_HRI_evaluation
+from I_play_function import play
 from agents import Epsilon_greedy_MF, Rmax, Epsilon_MB_horizon
 from agents import Epsilon_greedy_MB
 

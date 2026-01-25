@@ -1,0 +1,41 @@
+1. Reducing memory requirements
+(envs.py)	divided all environment default sizes by 2 
+(envs.py)		GridWorld default size from 24 to 12
+(envs.py)		SocialGridWorld size from 140 to 70
+
+(environment_generation.py)	Using environment lab_nav uses class Lab_env to construct a lab environment based on 
+(environment_generation.py) 	Lab_structure, so we reduced the LabStructure height, width, rooms up, rooms down, and (environment_generation.py)	door size from:
+(environment_generation.py)	class Lab_structure:
+(environment_generation.py)
+(environment_generation.py)    		def __init__(self):
+(environment_generation.py)
+(environment_generation.py)        	# General structure
+(environment_generation.py)        	self.total_width = np.random.randint(20, 21)
+(environment_generation.py)        	self.total_height = np.random.randint(20, 21)
+(environment_generation.py)        	self.number_rooms_up = np.random.randint(2, 5)
+(environment_generation.py)        	self.number_rooms_down = np.random.randint(2, 5)
+(environment_generation.py)        	self.door_width = 2
+(environment_generation.py) TO 
+(environment_generation.py)	class Lab_structure:
+(environment_generation.py)
+(environment_generation.py)   	 	def __init__(self):
+(environment_generation.py)
+(environment_generation.py)        	# General structure
+(environment_generation.py)        	self.total_width = np.random.randint(10, 11)
+(environment_generation.py)        	self.total_height = np.random.randint(10, 11)
+(environment_generation.py)        	self.number_rooms_up = np.random.randint(3, 4)
+(environment_generation.py)        	self.number_rooms_down = np.random.randint(3, 4)
+(environment_generation.py)        	self.door_width = 1
+
+Size of the rewards array depends on each environment's reward dictionary
+and the format of that dictionary depends on:
+self.number_nav_states which is the total size of the grid controllable through size default inpt value
+
+2. save path doesn't exist error:
+(all files with saves)	added:        
+(all files with saves)		save_dir = '{path required}'
+(all files with saves)		os.makedirs(save_dir, exist_ok=True) 
+
+
+
+3. 
