@@ -8,35 +8,27 @@ if __name__ == "__main__":
     from B_main import launch_and_plot
     from N_MF_MB_plot import main_MF_MB, main_MF_MB_plot
     from C_MFvsMB import evaluate_agents, plot_distances, plot_Q_curves, plot_2D_maps, plot_all_rewards_curves, generate_MF_tables
-    from E_envs import Gridworld, Human, Lab_env_HRI
+    from E_envs import Gridworld, Human, Lab_env_HRI, GoToHumanVision
     from G_agents import Rmax, Epsilon_greedy_MB, Epsilon_greedy_MF
     from M_graphics import get_max_Q_values_and_policy, plot_2D, plot_1D
     from I_play_function import play
+    from D_adaptibility import save_interaction, evaluate_human
+    import J_constants as const
 
 
     """
 
-    PART 1: Reproducing Figures 6, 7 and 8
-
-    PART 2: Exploring MF bootstrapping parameters that could improve performance
-
-    PART 3: Exploring multi-model options for human variability
+    Reproducing Figures 6, 7 and 8
 
     """
-
-
-
-# -------------------------------------------------------------------------------------------------- #
-#                               PART 1: Reproducing Figures 6, 7, and 8
-# -------------------------------------------------------------------------------------------------- #
 
 # ---------------------------------------------------------------------------- #
 # Figure 6 - Learning of the three modules by reinforcement learning agents 
 # ---------------------------------------------------------------------------- #
-    """
-# -------------------------------- #
-# Navigation Task
-# -------------------------------- #
+    
+    # -------------------------------- #
+    # Navigation Task
+    # -------------------------------- #
 
     agent = ['Rmax_MB_nav', 'e_greedy_MB', 'e_greedy_MF']
     env = ['gridworld']
@@ -46,6 +38,7 @@ if __name__ == "__main__":
     proc = 2
     cond = 'agent'
 
+    # 'all_data/all_imgs/1D-plots/' + str(time.time()) +'.pdf'
     launch_and_plot(agent,
                     env,
                     nb_iters,
@@ -55,9 +48,9 @@ if __name__ == "__main__":
                     cond)
 
     
-# -------------------------------- #
-# 'Go to human vision' Task
-# -------------------------------- #
+    # -------------------------------- #
+    # 'Go to human vision' Task
+    # -------------------------------- #
 
     agent = ['Rmax_MB_soc', 'e_greedy_MB', 'e_greedy_MF']
     env = ['go_to_h']
@@ -67,6 +60,7 @@ if __name__ == "__main__":
     proc = 2
     cond = 'agent'
 
+    # 'all_data/all_imgs/1D-plots/' + str(time.time()) +'.pdf'
     launch_and_plot(agent,
                     env,
                     nb_iters,
@@ -76,9 +70,9 @@ if __name__ == "__main__":
                     cond)
     
 
-# -------------------------------- #
-# Social Task
-# -------------------------------- #
+    # -------------------------------- #
+    # Social Task
+    # -------------------------------- #
 
     agent = ['Rmax_MB_soc', 'e_greedy_MB', 'e_greedy_MF']
     env = ['social_basic']
@@ -88,6 +82,7 @@ if __name__ == "__main__":
     proc = 2
     cond = 'agent'
 
+    # 'all_data/all_imgs/1D-plots/' + str(time.time()) +'.pdf'
     launch_and_plot(agent,
                     env,
                     nb_iters,
@@ -97,30 +92,33 @@ if __name__ == "__main__":
                     cond)
     
 
-# ----------------------------------------------------------------- #
-# Social Task with Model-Free bootstrapped on e-greedy Model-Based
-# ----------------------------------------------------------------- #
+    # ----------------------------------------------------------------- #
+    # Social Task with Model-Free bootstrapped on e-greedy Model-Based
+    # ----------------------------------------------------------------- #
 
     # in C_MF_MB_plot, change MB model to bootstrap MF on before running
 
     nb_iters = 10
     main_MF_MB(nb_iters)
     main_MF_MB_plot(nb_iters)
-    """
+    
 
 
-
-
-    # ---------------------------------------------------------------------------- #
-    #   Figure 7: Q-values learned by a model-free agent on the navigation task
-    # ---------------------------------------------------------------------------- #
+    
+# ---------------------------------------------------------------------------- #
+#   Figure 7: Q-values learned by a model-free agent on the navigation task
+# ---------------------------------------------------------------------------- #
     
     starting_seed = 1
     nb_iters = 10
 
-    # Get V*(s) for navigation task using Rmax -- run once -- done
+    # -------------------------------- #
+    #  Get V*(s) -- run once -- done
+    # -------------------------------- #
 
-    """
+
+    #  for navigation task using Rmax
+
     nb_trials_navigation = 20000
     nb_steps_navigation = 20
     navigation_environment = Gridworld()
@@ -129,14 +127,13 @@ if __name__ == "__main__":
     navigation_rewards = play(navigation_environment, navigation_agent,
                             nb_trials_navigation, nb_steps_navigation)
     best_q_values_navigation, _ = get_max_Q_values_and_policy(navigation_agent.Q)
-    save_dir = "some results/opt_q_values/navigation"
+    save_dir = "all_data/some results/opt_q_values/navigation"
     os.makedirs(save_dir, exist_ok=True) 
-    np.save("some results/opt_q_values/navigation/opt_V_navigation_Rmax.npy", best_q_values_navigation)
-    """
+    np.save("all_data/some results/opt_q_values/navigation/opt_V_navigation_Rmax.npy", best_q_values_navigation)
+    
 
-    # Get V*(s) for navigation task using e-greedy MB -- run once -- done
+    # for navigation task using e-greedy MB 
 
-    """
     nb_trials_navigation = 20000
     nb_steps_navigation = 20
     navigation_environment = Gridworld()
@@ -145,15 +142,17 @@ if __name__ == "__main__":
     navigation_rewards = play(navigation_environment, navigation_agent,
                             nb_trials_navigation, nb_steps_navigation)
     best_q_values_navigation, _ = get_max_Q_values_and_policy(navigation_agent.Q)
-    save_dir = "some results/opt_q_values/navigation"
+    save_dir = "all_data/some results/opt_q_values/navigation"
     os.makedirs(save_dir, exist_ok=True) 
-    np.save("some results/opt_q_values/navigation/opt_V_navigation_Epsilon_greedy_MB.npy", best_q_values_navigation)
-    """
+    np.save("all_data/some results/opt_q_values/navigation/opt_V_navigation_Epsilon_greedy_MB.npy", best_q_values_navigation)
+    
 
-    # Launch MFonMB agents and generate plots
-
+    # -------------------------------------------------------- #
+    #  Launch MB, MF, and MF on MB agents on navigation task
+    # -------------------------------------------------------- #
+    
     environments = ["navigation"]
-    play_parameters = {"navigation": {'trials': 20000, 'max_step': 20}}
+    play_parameters = {"navigation": {'trials': 20000, 'nb_steps': 20}}
 
     agents = ['Rmax', 'Epsilon_greedy_MB', 'Epsilon_greedy_MF']
 
@@ -172,123 +171,130 @@ if __name__ == "__main__":
 
     navigation_environment = Gridworld()
     environments_name = {"navigation": navigation_environment}
-           
+
+    play_parameters = {"navigation": {'trials': 20000, 'max_step': 20}}
+    
+
+    # -------------------------------- #
+    #          Plot results
+    # -------------------------------- #
+
+    # all_data/data_MFMB/agentname_envname_i/rewards_MBMF_agent.npy
+    # all_data/data_MFMB/agentname_envname_i/final_Q_MBMF_agent.npy
     generate_MF_tables(agents_with_MF, environments_name, play_parameters, starting_seed, nb_iters)
+    # all_data/data_MFMB/agentname_envname_rewards_comparison.png
     plot_all_rewards_curves(agents_with_MF, environments, starting_seed, nb_iters)
+    # all_data/data_MFMB/agentname_q_comparison_halfway.png
+    # all_data/data_MFMB/agent_name_q_comparison.png
     plot_Q_curves(0, agents_with_MF, starting_seed, nb_iters)
+    # all_data/data_MFMB/agentname_envname_i/tmp1/...
     plot_2D_maps(0, agents_with_MF, starting_seed, nb_iters)
-    plot_distances(0, agents_with_MF, starting_seed, nb_iters)
 
-
+    # all_data/data_MFMB/article/agent_name_distance_comparison_halfway.pdf
+    # DEBUG
+    # plot_distances(0, agents_with_MF, starting_seed, nb_iters)
+    
+    
 
 
 # ---------------------------------------------------------------------------- #
 # Figure 8 - Learning and adaptability to different human behaviors
 # ---------------------------------------------------------------------------- #
 
-# -------------------------------- #
-# Social Task with 3 Humans
-# -------------------------------- #
+    seed = 42
 
-# -------------------------------- #
-# Visit the Lab Task
-# -------------------------------- #
+    # ---------------------------------------------------------------------------- #
+    # Saving Q-Tables for checking adaptability to different humans
+    # ---------------------------------------------------------------------------- #
 
+    # navigation task
 
-# -------------------------------------------------------------------------------------------------- #
-#            PART 2: Exploring MF bootstrapping parameters that could improve performance
-# -------------------------------------------------------------------------------------------------- #
+    np.random.seed(seed)
+    nav_env = Gridworld()
+    # take model that performed best
+    nav_agent = Rmax(nav_env, **const.Rmax_MB_nav)
+    number_of_trials = 25000
+    number_of_steps = 20
 
-# -------------------------------------------------------------------------------------------------- #
-#                    PART 3: Exploring multi-model options for human variability
-# -------------------------------------------------------------------------------------------------- #
+    rewards = play(nav_env,
+                nav_agent,
+                number_of_trials,
+                number_of_steps)
 
-
-
-
-
-
-    # -------------------------------- #
-    # TO DEBUG - FIG 7 ON Social Task
-    # -------------------------------- #
-
-    # Get V*(s) for social task using Rmax -- run once
-
-    """ TO DEBUG
-    nb_trials_social = 200000
-    nb_steps_social = 20
-
-    navigation_environment = Gridworld()
-    human = Human(speeds=[0.5, 0.5, 0], failing_rate=0.05, pointing_need=0.5, losing_attention=0.05,
-                orientation_change_rate=0.2, random_movement=0.1)
-    social_environment = Lab_env_HRI(navigation_environment, human)
-
-    social_agent = Rmax(social_environment, gamma=0.9,
-                            m=1, Rmax=1, max_iterations=1, step_update=1000)
-    
-    social_rewards = play(social_environment, social_agent, nb_trials_social, nb_steps_social)
-
-    best_q_values_social, _ = get_max_Q_values_and_policy(social_agent.Q)
-
-    save_dir = "some results/opt_q_values/social"
+    save_dir = 'all_data/data/q_table'
     os.makedirs(save_dir, exist_ok=True) 
-    np.save("some results/opt_q_values/social/opt_V_social_Rmax.npy", best_q_values_social)
+    np.save("all_data/data/q_table/nav_Q_Rmax.npy", nav_agent.Q)
 
+    # go to human vision task
+    np.random.seed(seed)
+    nav_env = Gridworld()
+    go_to_human_environment = GoToHumanVision(nav_env)
+    # take model that performed best
+    go_to_human_agent = Epsilon_greedy_MB(go_to_human_environment,
+                                        **const.e_greedy_MB_param)
 
-    # Get V*(s) for social task using e-greedy MB -- run once
+    number_of_trials = 10000
+    number_of_steps = 20
 
-    nb_trials_social = 200000
-    nb_steps_social = 20
+    go_to_human_rewards = play(go_to_human_environment,
+                            go_to_human_agent,
+                            number_of_trials,
+                            number_of_steps)
 
-    navigation_environment = Gridworld()
-    human = Human(speeds=[0.5, 0.5, 0], failing_rate=0.05, pointing_need=0.5, losing_attention=0.05,
-                orientation_change_rate=0.2, random_movement=0.1)
-    social_environment = Lab_env_HRI(navigation_environment, human)
-
-    social_agent = Epsilon_greedy_MB(social_environment, gamma=0.9,
-                                    epsilon=0.1, max_iterations=1, step_update=1000)
-    
-    social_rewards = play(social_environment, social_agent, nb_trials_social, nb_steps_social)
-
-    best_q_values_social, _ = get_max_Q_values_and_policy(social_agent.Q)
-    save_dir = "some results/opt_q_values/social"
+    save_dir = 'all_data/data/q_table'
     os.makedirs(save_dir, exist_ok=True) 
-    np.save("some results/opt_q_values/social/opt_V_social_Epsilon_greedy_MB.npy", best_q_values_social)
-
+    np.save("all_data/data/q_table/go_Q.npy", go_to_human_agent.Q)
     
-    # evaluate agents and produce plots
 
-    environments = ["social"]
-
-    # agents = ['Rmax', 'Epsilon_greedy_MB', 'Epsilon_greedy_MF']
-    agents = ['Rmax']
-
-    play_parameters = {"social": {'trials': 40000, 'max_step': 20}}
-
-    agent_parameters = {
-        'Epsilon_greedy_MB': {'gamma': 0.9, 'epsilon': 0.05, 'max_iterations': 1, 'step_update': 1000},
-        'Rmax': {'gamma': 0.9, 'm': 1, 'Rmax': 1, 'max_iterations': 1, 'step_update': 1000},
-        'Epsilon_greedy_MF': {'gamma': 0.9, 'epsilon': 0.05, 'alpha': 0.5}}
-
+    # ---------------------------------------------------------------------------- #
+    # Saving interactions with the types of human to train on
+    # ---------------------------------------------------------------------------- #
     
-    agent_names = {'Rmax': Rmax,
-               'Epsilon_greedy_MB': Epsilon_greedy_MB,
-               'Epsilon_greedy_MF': Epsilon_greedy_MF}
+    # Fast human -> Human 2
+    name_human = 'fast_human'
+    number_of_trials = 25000
+    number_of_steps = 20
+    # 'all_data/data/q_table/fast_human'
+    save_interaction(seed,
+                    name_human,
+                    number_of_trials,
+                    number_of_steps)
+    
+    # ---------------------------------------------------------------- #
+    # Training on Human 2 (fast human).
+    # Testing on basic human (1), fast human (2), and hard human (3).
+    # ---------------------------------------------------------------- #
 
-    # rewards, times = evaluate_agents(environments, agents, nb_iters, play_parameters, agent_parameters, starting_seed, agent_names)
+    name_human = 'fast_human'
+    humans_to_test = ['basic_human', 'fast_human', 'hard_human']
+    nb_trials = 500
+    nb_steps = 100
+    nb_iters = 10
 
-    # agents_with_MF = ['Rmax', 'Epsilon_greedy_MB']
-    agents_with_MF = ['Rmax']
+    # "all_data/all_imgs/1D-plots/three_humans"+str(time.time())+".pdf"
+    evaluate_human(seed,
+                name_human,
+                humans_to_test,
+                nb_trials,
+                nb_steps,
+                nb_iters)
 
-    human = Human(speeds=[0.5, 0.5, 0], failing_rate=0.05, pointing_need=0.5, losing_attention=0.05,
-                orientation_change_rate=0.2, random_movement=0.1)
-    social_environment = Lab_env_HRI(navigation_environment, human)
-    environments_name = {"social": social_environment}
-                     
-    generate_MF_tables(agents_with_MF, environments_name, play_parameters, starting_seed, nb_iters)
-    plot_all_rewards_curves(agents_with_MF, environments, starting_seed, nb_iters)
-    # requires debuging V*(s) above
-    plot_Q_curves(1, agents_with_MF, starting_seed, nb_iters)
-    plot_2D_maps(1, agents_with_MF, starting_seed, nb_iters)
-    plot_distances(1, agents_with_MF, starting_seed, nb_iters)
-    """
+    # -------------------------------------------------------------------------------- #
+    # Training on Human 2 (fast human).
+    # Testing on fast human (2), fast human w/ pointing needed, and basic human (1)
+    # -------------------------------------------------------------------------------- #
+
+    name_human = 'fast_human'
+    humans_to_test = ['basic_human', 'pointing_need_human', 'fast_human']
+    nb_trials = 1000
+    nb_steps = 100
+    nb_iters = 10
+
+    # "all_data/all_imgs/1D-plots/three_humans"+str(time.time())+".pdf"
+    evaluate_human(seed,
+                name_human,
+                humans_to_test,
+                nb_trials,
+                nb_steps,
+                nb_iters)
+                

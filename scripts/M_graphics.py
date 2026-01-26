@@ -9,6 +9,22 @@ import os
 def get_mean_and_std(dictionary, condition='agent'):
     """Compute the mean and the standard error of the mean of 
     a dictionnary of results."""
+
+
+    """ uncomment to generate adaptability rewards per step plot
+    if condition == 'social':
+        dictionary = dictionary.item()
+        keys = list(dictionary.keys())
+        mean = {keys[0]: np.mean(dictionary[keys[0]], axis=0), 
+                keys[1]: np.mean(dictionary[keys[1]], axis=0), 
+                keys[2]: np.mean(dictionary[keys[2]], axis=0)}
+        std = {keys[0]: np.std(dictionary[keys[0]], axis=0), 
+                keys[1]: np.std(dictionary[keys[1]], axis=0), 
+                keys[2]: np.std(dictionary[keys[2]], axis=0)}
+        return (mean, std)
+    """
+    
+
     keys = list(dictionary.keys())
     nb_iters = max(map(lambda x: x[2], keys)) + \
         1  # gets the max of the iterations
@@ -19,19 +35,19 @@ def get_mean_and_std(dictionary, condition='agent'):
 
     if condition == 'agent':
         mean = {name_agent: np.mean([dictionary[env, name_agent, i]
-                                     for i in range(nb_iters) for env in all_env], axis=0, dtype=np.float32)
+                                    for i in range(nb_iters) for env in all_env], axis=0, dtype=np.float32)
                 for name_agent in all_agents}
 
         std = {name_agent: np.std([dictionary[env, name_agent, i]
-                                   for i in range(nb_iters) for env in all_env], axis=0, dtype=np.float32)
-               for name_agent in all_agents}
+                                for i in range(nb_iters) for env in all_env], axis=0, dtype=np.float32)
+            for name_agent in all_agents}
     else:
         mean = {name_env: np.mean([dictionary[name_env, name_agent, i]
-                                   for i in range(nb_iters) for name_agent in all_agents], axis=0, dtype=np.float32)
+                                for i in range(nb_iters) for name_agent in all_agents], axis=0, dtype=np.float32)
                 for name_env in all_env}
         std = {name_env: np.std([dictionary[name_env, name_agent, i]
-                                 for i in range(nb_iters) for name_agent in all_agents], axis=0, dtype=np.float32)
-               for name_env in all_env}
+                                for i in range(nb_iters) for name_agent in all_agents], axis=0, dtype=np.float32)
+            for name_env in all_env}
     return (mean, std)
 
 
@@ -76,10 +92,17 @@ def plot_curves(means, stds, all_agent_steps, condition='agent', title=''):
               'social_fast': 'tab:orange',
               'social_hard': 'tab:green',
               'social_slow': 'tab:blue',
-              'social_no_pointing': 'tab:gray',
+              'social_no_pointing': 'tab:green',
               'social_basic_speed_2':'black',
               'social_basic_speed_3':'tab:red',
-              'social_basic_speed_random':'tab:green'}
+              'fast_human': 'tab:orange',
+              'basic_human': 'tab:blue',
+              'pointing_need_human': 'tab:grey',
+              'hard_human': 'tab:red',
+              'basic_human_speed_2': 'black',
+              'basic_human_speed_3': 'tab:red',
+              'social_basic_speed_random':'tab:green',
+              'basic_human_speed_random':'tab:green'}
 
     fig = plt.figure(dpi=300)
     plt.xlabel("Steps")
@@ -112,10 +135,10 @@ def plot_curves(means, stds, all_agent_steps, condition='agent', title=''):
         plt.title(title)
 
     # ADDED create directory to save results in
-    save_dir = '../all_imgs/1D-plots/'
+    save_dir = 'all_data/all_imgs/1D-plots/'
     os.makedirs(save_dir, exist_ok=True) 
 
-    plt.savefig('../all_imgs/1D-plots/' + str(time.time()) +
+    plt.savefig('all_data/all_imgs/1D-plots/' + str(time.time()) +
                 '.pdf', bbox_inches='tight')
 
 
@@ -135,7 +158,7 @@ def plot_2D(table, environment, path=''):
     plt.yticks([])
     if path != '':
         plt.savefig(path, bbox_inches='tight')
-    plt.show()
+    #plt.show()
     plt.close()
 
 
@@ -210,7 +233,7 @@ def plot_vs_distance(q_table_MB,
     max_distance = np.max(distances)
 
     list_splits = np.arange(1, max_distance+1, dtype=np.float32)
-    print(list_splits)
+    # print(list_splits)
 
     best_q = np.round(best_q, 2)
     packs_by_value = [np.where(distances == list_splits[i])[0]
@@ -391,7 +414,7 @@ def plot_different_humans(all_rewards, title=''):
         plt.title(title)
 
     # ADDED create directory to save results in
-    save_dir = '../all_imgs/1D-plots'
+    save_dir = 'all_data/all_imgs/1D-plots'
     os.makedirs(save_dir, exist_ok=True) 
 
-    plt.savefig("../all_imgs/1D-plots/three_humans"+str(time.time())+".pdf")
+    plt.savefig("all_data/all_imgs/1D-plots/three_humans"+str(time.time())+".pdf")

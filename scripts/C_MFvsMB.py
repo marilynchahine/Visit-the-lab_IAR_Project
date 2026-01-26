@@ -233,6 +233,7 @@ for i in range(int(navigation_environment.max_label)+1):
     plot_2D(q_values, navigation_environment)
 """
 
+
 # Compare the agents
 
 nb_iters = 0
@@ -282,7 +283,7 @@ def play_multiprocess(environment, agent, name_agent, name_environment, trials=1
             if trial == trials - 1 and step == 0:
                 mid_time = time.time()
                 directory_name = generate_directory_name(
-                    "data_MFMB/"+name_agent+'_'+name_environment)
+                    "all_data/data_MFMB/"+name_agent+'_'+name_environment)
                 max_q_values, best_actions = get_max_Q_values_and_policy(agent.Q)
 
                 # ADDED create directory to save results in
@@ -433,7 +434,7 @@ def generate_MF_tables(agents_with_MF, environments, play_parameters, starting_s
     for i in range(starting_seed, nb_iters + 1):
         for agent_name in agents_with_MF:
             for env_name in environments:
-                path_to_save = "data_MFMB/"+agent_name+'_'+env_name+'_'+str(i)
+                path_to_save = "all_data/data_MFMB/"+agent_name+'_'+env_name+'_'+str(i)
                 starting_Q = np.load(path_to_save+'/MF_qvalues_halfway.npy')
                 environment = environments_name[env_name]
                 agent = Epsilon_greedy_MF(environment, gamma=0.9,
@@ -454,8 +455,8 @@ def plot_all_rewards_curves(agents_with_MF, environments, starting_seed, nb_iter
         for env_name in environments:
             all_rewards_MB, all_rewards_MF, all_rewards_MBMF = [], [], []
             for i in range(starting_seed, nb_iters + 1):
-                path_to_save = "data_MFMB/"+agent_name+'_'+env_name+'_'+str(i)
-                path_MF = 'data_MFMB/Epsilon_greedy_MF'+'_' + env_name + '_' + str(i)
+                path_to_save = "all_data/data_MFMB/"+agent_name+'_'+env_name+'_'+str(i)
+                path_MF = 'all_data/data_MFMB/Epsilon_greedy_MF'+'_' + env_name + '_' + str(i)
                 rewards_MB = np.load(path_to_save+'/rewards.npy')
                 rewards_MF = np.load(path_MF+'/rewards.npy')
                 rewards_MBMF = np.load(path_to_save+'/rewards_MBMF_agent.npy')
@@ -466,7 +467,7 @@ def plot_all_rewards_curves(agents_with_MF, environments, starting_seed, nb_iter
                 #                     path=path_to_save+'/rewards_comparison.pdf',
                 #                     title='MF performance with '+agent_name+' in the '+env_name + ' task')
             plot_with_std(all_rewards_MB, all_rewards_MF, all_rewards_MBMF,
-                          path='data_MFMB/'+agent_name + '_' + env_name+'_rewards_comparison.png',
+                          path='all_data/data_MFMB/'+agent_name + '_' + env_name+'_rewards_comparison.png',
                           title='')
 
 
@@ -479,8 +480,8 @@ def plot_Q_curves(task, agents_with_MF, starting_seed, nb_iters):
         big_MF, big_MB, big_MBMF = [], [], []
         big_best, big_MF_half, big_MB_half, big_MBMF_half = [], [], [], []
         for i in range(starting_seed, nb_iters + 1):
-            path_to_save = "data_MFMB/"+agent_name+'_'+env_name+'_'+str(i)
-            path_MF = 'data_MFMB/Epsilon_greedy_MF'+'_' + env_name + '_' + str(i)
+            path_to_save = "all_data/data_MFMB/"+agent_name+'_'+env_name+'_'+str(i)
+            path_MF = 'all_data/data_MFMB/Epsilon_greedy_MF'+'_' + env_name + '_' + str(i)
             q_table_MF = np.load(path_MF+'/max_q_values.npy')
             q_table_MF_halfway = np.load(path_MF+'/max_q_values_halfway.npy')
             q_table_MB = np.load(path_to_save+'/max_q_values.npy')
@@ -490,7 +491,7 @@ def plot_Q_curves(task, agents_with_MF, starting_seed, nb_iters):
                 np.load(path_to_save+'/MF_qvalues_halfway.npy'))
             q_table_MBMF, _ = get_max_Q_values_and_policy(
                 np.load(path_to_save+'/final_Q_MBMF_agent.npy'))
-            best_q_per_task = np.load('some results/opt_q_values/'+env_name+'/opt_V_'+env_name+'_'+agent_name+'.npy')
+            best_q_per_task = np.load('all_data/some results/opt_q_values/'+env_name+'/opt_V_'+env_name+'_'+agent_name+'.npy')
 
             big_MF += list(q_table_MF)
             big_MB += list(q_table_MB)
@@ -509,9 +510,9 @@ def plot_Q_curves(task, agents_with_MF, starting_seed, nb_iters):
         big_best = np.array(big_best, dtype=np.float32)
 
         plot_vs_Q(big_MB, big_MF, big_MBMF, env_name, big_best, name_agent=agent_name,
-                  path='data_MFMB/'+agent_name+'_q_comparison.png')
+                  path='all_data/data_MFMB/'+agent_name+'_q_comparison.png')
         plot_vs_Q(big_MB_half, big_MF_half, big_MBMF_half, env_name, big_best, name_agent=agent_name,
-                  path='data_MFMB/'+agent_name+'_q_comparison_halfway.png')
+                  path='all_data/data_MFMB/'+agent_name+'_q_comparison_halfway.png')
 
 
 def plot_2D_maps(task, agents_with_MF, starting_seed, nb_iters):
@@ -519,11 +520,12 @@ def plot_2D_maps(task, agents_with_MF, starting_seed, nb_iters):
 
         if task == 0:
             env_name = "navigation"
+            navigation_environment = Gridworld(size=12)
         elif task == 1:
             env_name = "social"
             
         for i in range(starting_seed, nb_iters + 1):
-            path_to_save = "data_MFMB/"+agent_name+'_'+env_name+'_'+str(i)
+            path_to_save = "all_data/data_MFMB/"+agent_name+'_'+env_name+'_'+str(i)
             q_table_MB = np.load(path_to_save+'/max_q_values.npy')
             q_table_MB_halfway = np.load(path_to_save+'/max_q_values_halfway.npy')
             q_table_MBMF_halfway, _ = get_max_Q_values_and_policy(
@@ -532,7 +534,7 @@ def plot_2D_maps(task, agents_with_MF, starting_seed, nb_iters):
                 np.load(path_to_save+'/final_Q_MBMF_agent.npy'))
             step = len(q_table_MB)//9
 
-            path_MF = 'data_MFMB/Epsilon_greedy_MF'+'_' + env_name + '_' + str(i)
+            path_MF = 'all_data/data_MFMB/Epsilon_greedy_MF'+'_' + env_name + '_' + str(i)
             q_table_MF = np.load(path_MF+'/max_q_values.npy')
             q_table_MF_halfway = np.load(path_MF+'/max_q_values_halfway.npy')
             name_to_table = {"q_table_MB": q_table_MB,
@@ -542,10 +544,14 @@ def plot_2D_maps(task, agents_with_MF, starting_seed, nb_iters):
                              "q_table_MF": q_table_MF,
                              "q_table_MF_halfway": q_table_MF_halfway}
             
-            save_dir = path_to_save + '/tmp1'
+            save_dir = path_to_save + '/tmp1/'
             os.makedirs(save_dir, exist_ok=True) 
 
-            for i in range(starting_seed, nb_iters):
+            save_dir = path_MF + '/tmp1/'
+            os.makedirs(save_dir, exist_ok=True) 
+
+            print(q_table_MF)
+            for i in range(9): # nb of rooms
                 all_paths = {"q_table_MB": path_to_save + '/tmp1/2D_plot_'+str(i)+'.png',
                              "q_table_MB_halfway": path_to_save + '/tmp1/2D_plot_halfway_'+str(i)+'.png',
                              "q_table_MBMF_halfway": path_to_save + '/tmp1/2D_plot_MBMF_halfway_'+str(i)+'.png',
@@ -559,9 +565,9 @@ def plot_2D_maps(task, agents_with_MF, starting_seed, nb_iters):
 
 def cluster_per_distance(big_MBMF_avg):
     distance_qs = big_MBMF_avg
-    # distance_qs = np.round(np.max(np.load("data/q_table_navigation_one_distance.npy"), axis=1), 2)
-    # distance_qs = np.round(np.max(np.load("data/" + agent_name + "_" + env_name + "_Qtables.npy"), axis=1), 2)
-    # distance_qs = np.round(np.max(np.load('some results/opt_q_values/'+env_name+'/opt_V_'+env_name+'_'+agent_name+'.npy'), axis=1), 2)
+    # distance_qs = np.round(np.max(np.load("all_data/data/q_table_navigation_one_distance.npy"), axis=1), 2)
+    # distance_qs = np.round(np.max(np.load("all_data/data/" + agent_name + "_" + env_name + "_Qtables.npy"), axis=1), 2)
+    # distance_qs = np.round(np.max(np.load('all_data/some results/opt_q_values/'+env_name+'/opt_V_'+env_name+'_'+agent_name+'.npy'), axis=1), 2)
     get_all_distances = np.unique(distance_qs)
     get_ordered_distances = {get_all_distances[i]: np.argsort(
         -get_all_distances)[i] for i in range(len(get_all_distances))}
@@ -580,8 +586,8 @@ def plot_distances(task, agents_with_MF, starting_seed, nb_iters):
         big_MF, big_MB, big_MBMF = [], [], []
         big_best, big_MF_half, big_MB_half, big_MBMF_half = [], [], [], []
         for i in range(starting_seed, nb_iters + 1):
-            path_to_save = "data_MFMB/"+agent_name+'_'+env_name+'_'+str(i)
-            path_MF = 'data_MFMB/' + agent_name +'_' + env_name + '_' + str(i)
+            path_to_save = "all_data/data_MFMB/"+agent_name+'_'+env_name+'_'+str(i)
+            path_MF = 'all_data/data_MFMB/Epsilon_greedy_MF' +'_' + env_name + '_' + str(i)
             # q_table_MF = np.load(path_MF+'/max_q_values.npy')
             q_table_MF_halfway = np.load(path_MF+'/max_q_values_halfway.npy')
             # q_table_MB = np.load(path_to_save+'/max_q_values.npy')
@@ -591,12 +597,12 @@ def plot_distances(task, agents_with_MF, starting_seed, nb_iters):
                 np.load(path_to_save+'/MF_qvalues_halfway.npy'))
             q_table_MBMF, _ = get_max_Q_values_and_policy(
                 np.load(path_to_save+'/final_Q_MBMF_agent.npy'))
-            best_q_per_task = np.load('some results/opt_q_values/'+env_name+'/opt_V_'+env_name+'_'+agent_name+'.npy')
+            best_q_per_task = np.load('all_data/some results/opt_q_values/'+env_name+'/opt_V_'+env_name+'_'+agent_name+'.npy')
 
             # big_MF += list(q_table_MF)
             # big_MB += list(q_table_MB)
-            print("shape ", q_table_MBMF.shape)
-            big_MBMF.append(list(q_table_MBMF))
+            # print("shape ", q_table_MBMF.shape)
+            big_MBMF += list(q_table_MBMF)
             big_MF_half += list(q_table_MF_halfway)
             big_MB_half += list(q_table_MB_halfway)
             big_MBMF_half += list(q_table_MBMF_halfway)
@@ -610,16 +616,17 @@ def plot_distances(task, agents_with_MF, starting_seed, nb_iters):
         big_MBMF_half = np.array(big_MBMF_half, dtype=np.float32)
         big_best = np.array(big_best, dtype=np.float32)
 
-        print("TYPE ", big_MBMF.shape)
-        big_MBMF_avg = np.mean(big_MBMF, axis = 0)
-        print("TYPE 2", big_MBMF_avg.shape)
-        all_distances = cluster_per_distance(big_MBMF_avg)
+        i = 3
+        q_table_MB = np.load(path_to_save+'/max_q_values.npy')
+        step = len(q_table_MB)//9
+        q_values = big_MBMF[i*step:(i+1)*step]
+        all_distances = cluster_per_distance(big_MBMF)
         # all_distances = cluster_per_distance(best_q_per_task, agent_name, env_name)
         # plot_vs_distance(big_MB, big_MF, big_MBMF, env_name, big_best, all_distances,
         #                  agent_name,
-        #                  path='data_MFMB/article/'+agent_name+'_distance_comparison.pdf')
+        #                  path='all_data/data_MFMB/article/'+agent_name+'_distance_comparison.pdf')
 
-        save_dir = 'data_MFMB/article'
+        save_dir = 'all_data/data_MFMB/article'
         os.makedirs(save_dir, exist_ok=True) 
         plot_vs_distance(big_MB_half, big_MF_half, big_MBMF_half, env_name, big_best, all_distances, name_agent=agent_name,
-                         path='data_MFMB/article/'+agent_name+'_distance_comparison_halfway.pdf')
+                         path='all_data/data_MFMB/article/'+agent_name+'_distance_comparison_halfway.pdf')

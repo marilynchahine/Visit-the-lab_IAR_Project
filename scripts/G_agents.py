@@ -21,7 +21,7 @@ class Epsilon_greedy_MF:
         if initial_Q is not None:
             self.Q = initial_Q
         else:
-            self.Q = np.zeros((self.size_environment, self.size_actions), dtype=np.int32)
+            self.Q = np.zeros((self.size_environment, self.size_actions), np.float32)
         self.epsilon = epsilon
         self.alpha = alpha
         self.gamma = gamma
@@ -73,7 +73,7 @@ class Basic_MB:
         self.nSAS = np.zeros(self.shape_SAS, dtype=np.float32)
 
         self.tSAS = np.ones(self.shape_SAS, dtype=np.float32) / self.size_environment
-        self.Q = np.zeros(self.shape_SA, dtype=np.int32)
+        self.Q = np.zeros(self.shape_SA, dtype=np.float32)
 
         self.counter = 0
 
@@ -137,7 +137,7 @@ class Epsilon_greedy_MB(Basic_MB):
         if np.random.random() > (1 - self.epsilon):
             action = np.random.randint(self.size_actions, dtype=np.int32)
         else:
-            q_values = self.Q[state]
+            q_values = self.Q[int(state)]
             action = np.random.choice(
                 np.flatnonzero(q_values == q_values.max()))
         return action
@@ -158,7 +158,7 @@ class Rmax(Basic_MB):
         self.Rmax = Rmax
         self.m = m
         self.R_VI = np.ones(self.shape_SA, dtype=np.float32) * self.Rmax
-        self.Q = np.ones(self.shape_SA, dtype=np.int32) * self.Rmax / (1 - self.gamma)
+        self.Q = np.ones(self.shape_SA, dtype=np.float32) * self.Rmax / (1 - self.gamma)
         self.known_states = np.zeros(self.shape_SA, dtype=np.float32)
         self.update_Q = False
 
@@ -205,7 +205,7 @@ class MFLearnerOnMB:
         self.size_environment = len(self.environment.states)
         self.size_actions = len(self.environment.actions)
         self.shape_SA = (self.size_environment, self.size_actions)
-        self.Q_MF = np.zeros(self.shape_SA, dtype=np.int32) / (1 - self.gamma)
+        self.Q_MF = np.zeros(self.shape_SA, dtype=np.float32) / (1 - self.gamma)
         self.Q = self.MB_agent.Q
 
     def learn(self, old_state, reward, new_state, action):

@@ -8,7 +8,7 @@ import J_constants as const
 import K_variables as var
 import numpy as np
 import time
-from M_graphics import plot_different_humans
+from M_graphics import plot_different_humans, plot_curves, extracting_results
 
 import os
 
@@ -16,43 +16,46 @@ import os
 # Saving Q-Tables for checking adaptability to different humans
 # ---------------------------------------------------------------------------- #
 
-
+"""
 # ---------------------------------------------------------------------------- #
 # Navigation
 # ---------------------------------------------------------------------------- #
 
-# np.random.seed(1)
-# nav_env = Gridworld(size=24)
-# nav_agent = Rmax(nav_env, **const.Rmax_MB_nav)
-# number_of_trials = 25000
-# number_of_steps = 20
+np.random.seed(1)
+nav_env = Gridworld(size=24)
+# take model that performed best
+nav_agent = Rmax(nav_env, **const.Rmax_MB_nav)
+number_of_trials = 25000
+number_of_steps = 20
 
-# rewards = play(nav_env,
-#                nav_agent,
-#                number_of_trials,
-#                number_of_steps)
+rewards = play(nav_env,
+               nav_agent,
+               number_of_trials,
+               number_of_steps)
 
-# np.save("../data/q_table/nav_Q_Rmax.npy", nav_agent.Q)
+np.save("all_data/data/q_table/nav_Q_Rmax.npy", nav_agent.Q)
 
 # ---------------------------------------------------------------------------- #
 # Go to human
 # ---------------------------------------------------------------------------- #
-# np.random.seed(2)
-# nav_env = Gridworld()
-# go_to_human_environment = GoToHumanVision(nav_env)
-# go_to_human_agent = Epsilon_greedy_MB(go_to_human_environment,
-#                                       **const.e_greedy_MB_param)
+np.random.seed(2)
+nav_env = Gridworld()
+go_to_human_environment = GoToHumanVision(nav_env)
+# take model that performed best
+go_to_human_agent = Epsilon_greedy_MB(go_to_human_environment,
+                                      **const.e_greedy_MB_param)
 
-# number_of_trials = 10000
-# number_of_steps = 20
+number_of_trials = 10000
+number_of_steps = 20
 
-# go_to_human_rewards = play(go_to_human_environment,
-#                            go_to_human_agent,
-#                            number_of_trials,
-#                            number_of_steps)
+go_to_human_rewards = play(go_to_human_environment,
+                           go_to_human_agent,
+                           number_of_trials,
+                           number_of_steps)
 
 
-# np.save("../data/q_table/go_Q.npy", go_to_human_agent.Q)
+np.save("all_data/data/q_table/go_Q.npy", go_to_human_agent.Q)
+"""
 
 # ---------------------------------------------------------------------------- #
 # Function to measure adaptibility to human variability
@@ -66,6 +69,7 @@ def run_and_plot_human_variability(nb_iters,
                                    init_go,
                                    init_soc,
                                    title_plot):
+    
     all_rewards = {human_name: [] for human_name in human_names}
     for i in range(nb_iters):
         for human_name in human_names:
@@ -115,13 +119,24 @@ def run_and_plot_human_variability(nb_iters,
             all_rewards[human_name].append(rewards)
         
     # ADDED create directory to save results in
-    save_dir = '../data/all_rewards/'
+    save_dir = 'all_data/data/all_rewards/'
     os.makedirs(save_dir, exist_ok=True) 
 
-    np.save("../data/all_rewards/" + str(time.time())+".npy",
+    np.save("all_data/data/all_rewards/" + str(time.time())+".npy",
             all_rewards)
 
     plot_different_humans(all_rewards, title_plot)
+    
+    """    Code to produce rewards per step, 
+            changes to make in get_mean_and_std too
+
+    all_rewards = np.load("all_data/data/all_rewards/1769438407.2315567.npy", allow_pickle=True)
+    mean, std = extracting_results(all_rewards, 100, 'social')
+
+    play_parameters =  {'trials': 500, 'max_step': 100}
+    total_steps = {'basic_human': 50000, 'pointing_need_human': 50000, 'fast_human': 50000}
+    plot_curves(mean, std, total_steps)
+    """
 
 
 # ---------------------------------------------------------------------------- #
@@ -138,7 +153,7 @@ def save_interaction(random_seed,
 
     human = Human(**var.human_parameters[name_human])
 
-    nav_env = SocialGridworld(size=120)
+    nav_env = SocialGridworld(size=12)
 
     social_environment = Lab_env_HRI(nav_env, human)
     social_agent = Epsilon_greedy_MB(social_environment,
@@ -150,17 +165,17 @@ def save_interaction(random_seed,
                           number_of_steps)
 
     # ADDED create directory to save results in
-    save_dir = '../data/q_table/'
+    save_dir = "all_data/data/q_table/"+name_human+"/"
     os.makedirs(save_dir, exist_ok=True) 
 
-    np.save("../data/q_table/"+name_human+"/soc_Q.npy", social_agent.Q)
-    np.save("../data/q_table/"+name_human+"/soc_R.npy", social_agent.R)
-    np.save("../data/q_table/"+name_human+"/soc_T.npy", social_agent.tSAS)
-    np.save("../data/q_table/"+name_human+"/soc_nSA.npy", social_agent.nSA)
-    np.save("../data/q_table/"+name_human+"/soc_nSAS.npy", social_agent.nSAS)
-    np.save("../data/q_table/"+name_human+"/soc_Rsum.npy", social_agent.Rsum)
-    # np.save("data/article/horizon/nSA_horizon.npy", social_agent.nSA_horizon)
-    # np.save("data/article/horizon/R_horizon.npy", social_agent.R_horizon)
+    np.save("all_data/data/q_table/"+name_human+"/soc_Q.npy", social_agent.Q)
+    np.save("all_data/data/q_table/"+name_human+"/soc_R.npy", social_agent.R)
+    np.save("all_data/data/q_table/"+name_human+"/soc_T.npy", social_agent.tSAS)
+    np.save("all_data/data/q_table/"+name_human+"/soc_nSA.npy", social_agent.nSA)
+    np.save("all_data/data/q_table/"+name_human+"/soc_nSAS.npy", social_agent.nSAS)
+    np.save("all_data/data/q_table/"+name_human+"/soc_Rsum.npy", social_agent.Rsum)
+    # np.save("all_data/data/article/horizon/nSA_horizon.npy", social_agent.nSA_horizon)
+    # np.save("all_data/data/article/horizon/R_horizon.npy", social_agent.R_horizon)
 
 
 # ---------------------------------------------------------------------------- #
@@ -171,20 +186,20 @@ def save_interaction(random_seed,
 def evaluate_human(random_seed,
                    name_human,
                    humans_to_test,
-                   nb_trials=300,
-                   nb_steps=100,
-                   nb_iters=10):
+                   nb_trials,
+                   nb_steps,
+                   nb_iters):
 
     np.random.seed(random_seed)
-    q_table_nav = np.load("../data/q_table/nav_Q_Rmax.npy")
-    q_table_go_to_human = np.load("../data/q_table/go_Q.npy")
-    q_table_social = np.load("../data/q_table/"+name_human+"/soc_Q.npy")
+    q_table_nav = np.load("all_data/data/q_table/nav_Q_Rmax.npy")
+    q_table_go_to_human = np.load("all_data/data/q_table/go_Q.npy")
+    q_table_social = np.load("all_data/data/q_table/"+name_human+"/soc_Q.npy")
 
-    social_R = np.load("../data/q_table/"+name_human+"/soc_R.npy")
-    social_tSAS = np.load("../data/q_table/"+name_human+"/soc_T.npy")
-    social_nSA = np.load("../data/q_table/"+name_human+"/soc_nSA.npy")
-    social_nSAS = np.load("../data/q_table/"+name_human+"/soc_nSAS.npy")
-    social_Rsum = np.load("../data/q_table/"+name_human+"/soc_Rsum.npy")
+    social_R = np.load("all_data/data/q_table/"+name_human+"/soc_R.npy")
+    social_tSAS = np.load("all_data/data/q_table/"+name_human+"/soc_T.npy")
+    social_nSA = np.load("all_data/data/q_table/"+name_human+"/soc_nSA.npy")
+    social_nSAS = np.load("all_data/data/q_table/"+name_human+"/soc_nSAS.npy")
+    social_Rsum = np.load("all_data/data/q_table/"+name_human+"/soc_Rsum.npy")
 
     init_nav = {'Q': q_table_nav}
     init_go = {'Q': q_table_go_to_human}
@@ -204,7 +219,7 @@ def evaluate_human(random_seed,
                                    init_go,
                                    init_soc, title_plot=title)
 
-
+"""
 # ---------------------------------------------------------------------------- #
 # Save Fast Human
 # ---------------------------------------------------------------------------- #
@@ -329,3 +344,4 @@ evaluate_human(seed,
                nb_trials,
                nb_steps,
                nb_iters)
+"""

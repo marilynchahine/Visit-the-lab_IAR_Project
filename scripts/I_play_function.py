@@ -137,8 +137,8 @@ def main_function(agent_to_test,
     print('Computation time: '+str(time_after - before))
 
     # ADDED create directory to save results in
-    save_dir = '../data/all_rewards/'
+    save_dir = 'all_data/data/all_rewards/'
     os.makedirs(save_dir, exist_ok=True) 
 
-    np.save('../data/all_rewards/'+str(before)+' .npy', rewards)
+    np.save('all_data/data/all_rewards/'+str(before)+' .npy', rewards)
     return rewards
