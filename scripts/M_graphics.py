@@ -10,9 +10,9 @@ def get_mean_and_std(dictionary, condition='agent'):
     """Compute the mean and the standard error of the mean of 
     a dictionnary of results."""
 
-
-    """ uncomment to generate adaptability rewards per step plot
-    if condition == 'social':
+    
+    # used to generate adaptability rewards per step plots
+    if condition == 'adaptability':
         dictionary = dictionary.item()
         keys = list(dictionary.keys())
         mean = {keys[0]: np.mean(dictionary[keys[0]], axis=0), 
@@ -22,7 +22,6 @@ def get_mean_and_std(dictionary, condition='agent'):
                 keys[1]: np.std(dictionary[keys[1]], axis=0), 
                 keys[2]: np.std(dictionary[keys[2]], axis=0)}
         return (mean, std)
-    """
     
 
     keys = list(dictionary.keys())
@@ -70,7 +69,8 @@ def get_moving_average(rewards, avg=100):
     return index_avg, moving_average_rewards
 
 
-def extracting_results(dic_of_rewards, batches=100, condition='agent'):
+# change condition to adaptability if ploting adaptability rewards per step plots
+def extracting_results(dic_of_rewards, batches=100, condition='agent'): 
     mean, std = get_mean_and_std(dic_of_rewards, condition=condition)
     reduced_mean = {name: reducing_with_batches(
         table, batch_numbers=batches) for name, table in mean.items()}

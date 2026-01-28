@@ -272,6 +272,9 @@ if __name__ == "__main__":
     nb_iters = 10
 
     # "all_data/all_imgs/1D-plots/three_humans"+str(time.time())+".pdf"
+    # to get the rewards per step plot, follow the comments in:
+    # - run_and_plot_human_variability (D_adaptability.py)
+    # - get_mean_and_std (M_graphics.py)
     evaluate_human(seed,
                 name_human,
                 humans_to_test,
@@ -291,6 +294,9 @@ if __name__ == "__main__":
     nb_iters = 10
 
     # "all_data/all_imgs/1D-plots/three_humans"+str(time.time())+".pdf"
+    # to get the rewards per step plot, follow the comments in:
+    # - run_and_plot_human_variability (D_adaptability.py)
+    # - get_mean_and_std (M_graphics.py)
     evaluate_human(seed,
                 name_human,
                 humans_to_test,

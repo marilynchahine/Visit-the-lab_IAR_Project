@@ -70,6 +70,7 @@ def run_and_plot_human_variability(nb_iters,
                                    init_soc,
                                    title_plot):
     
+    """
     all_rewards = {human_name: [] for human_name in human_names}
     for i in range(nb_iters):
         for human_name in human_names:
@@ -126,17 +127,23 @@ def run_and_plot_human_variability(nb_iters,
             all_rewards)
 
     plot_different_humans(all_rewards, title_plot)
-    
-    """    Code to produce rewards per step, 
-            changes to make in get_mean_and_std too
+    """
 
-    all_rewards = np.load("all_data/data/all_rewards/1769438407.2315567.npy", allow_pickle=True)
-    mean, std = extracting_results(all_rewards, 100, 'social')
+    # """
+    # Code to produce rewards per step, 
+    # changes to make in get_mean_and_std too (M_graphics.py)
+
+    # replace the .npy file by the file that contains the rewards for the adaptability run
+    # should be last in the all_data/data/all_rewards directory if it was just ran
+    all_rewards = np.load("all_data/data/all_rewards/1769634440.3862665.npy", allow_pickle=True)
+    mean, std = extracting_results(all_rewards, 100, 'adaptability')
 
     play_parameters =  {'trials': 500, 'max_step': 100}
-    total_steps = {'basic_human': 50000, 'pointing_need_human': 50000, 'fast_human': 50000}
+    # replace with the agents that we're comparing testing results on:
+    total_steps = {'basic_human': 50000, 'hard_human': 50000, 'fast_human': 50000}
     plot_curves(mean, std, total_steps)
-    """
+    # """
+    
 
 
 # ---------------------------------------------------------------------------- #
