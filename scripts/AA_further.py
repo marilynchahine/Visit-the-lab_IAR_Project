@@ -195,6 +195,7 @@ class MultiModelAgent_Sub():
 
         all_rewards = {human_name: [] for human_name in human_names}
 
+        # loop through the humans we want to test on
         for human_name in human_names:
 
             print("TESTING SUBGOAL 1 ON HUMAN: ", human_name)
@@ -207,74 +208,89 @@ class MultiModelAgent_Sub():
                 params = self.H3
             
             for _ in range(nb_iters):
-                for human_name in human_names:
-                    nav_env = Gridworld()
-                    human = Human(**var.human_parameters[human_name])
-                    social_environment = Lab_env_HRI(nav_env, human)
-                    environment = Lab_HRI_evaluation(nav_env, human)
+                nav_env = Gridworld()
+                human = Human(**var.human_parameters[human_name])
+                social_environment = Lab_env_HRI(nav_env, human)
+                environment = Lab_HRI_evaluation(nav_env, human)
 
-                    navigation_agent = Epsilon_greedy_MB(
-                        social_environment,
-                        **const.e_greedy_MB_no_explo_param)
+                navigation_agent = Epsilon_greedy_MB(
+                    social_environment,
+                    **const.e_greedy_MB_no_explo_param)
 
-                    go_to_human_agent = Epsilon_greedy_MB(
-                        social_environment,
-                        **const.e_greedy_MB_no_explo_param)
+                go_to_human_agent = Epsilon_greedy_MB(
+                    social_environment,
+                    **const.e_greedy_MB_no_explo_param)
 
-                    e_greedy_MB_param = {'gamma': 0.9,
-                                        'epsilon': 0.05,
-                                        'max_iterations': 1,
-                                        'step_update': 100}
+                e_greedy_MB_param = {'gamma': 0.9,
+                                    'epsilon': 0.05,
+                                    'max_iterations': 1,
+                                    'step_update': 100}
 
-                    social_agent = Epsilon_greedy_MB(
-                        social_environment,
-                        **e_greedy_MB_param)
+                social_agent = Epsilon_greedy_MB(
+                    social_environment,
+                    **e_greedy_MB_param)
 
-                    agent = NavigationInteraction(
-                        environment,
-                        navigation_agent,
-                        social_agent,
-                        go_to_human_agent,
-                        self.nav,
-                        params,     # this makes that the model is trained on the given human
-                        self.goToH
-                    )
-                    number_of_trials = nb_trials
-                    number_of_steps = nb_steps
+                agent = NavigationInteraction(
+                    environment,
+                    navigation_agent,
+                    social_agent,
+                    go_to_human_agent,
+                    self.nav,
+                    params,     # this makes that the model is trained on the given human
+                    self.goToH
+                )
+                number_of_trials = nb_trials
+                number_of_steps = nb_steps
 
-                    visual = {'render': False,
-                            'trial': [],
-                            'task_type': "HRI"}
+                visual = {'render': False,
+                        'trial': [],
+                        'task_type': "HRI"}
 
-                    rewards = play(environment,
-                                agent,
-                                number_of_trials,
-                                number_of_steps,
-                                visual)
-                    
-                    all_rewards[human_name].append(rewards)
+                rewards = play(environment,
+                            agent,
+                            number_of_trials,
+                            number_of_steps,
+                            visual)
+                
+                all_rewards[human_name].append(rewards)
 
         save_dir = 'all_data/data/all_rewards/'
         os.makedirs(save_dir, exist_ok=True) 
 
         np.save("all_data/data/all_rewards/" + str(time.time())+".npy", all_rewards)
 
-        plot_different_humans(all_rewards, "Multi-Model Sub-goal, tested on " + str(human_names))
+        plot_different_humans(all_rewards, "Multi-Model Sub-goal 1")
 
 
-    def evaluate_2(self, seed, human_params, nb_iters, nb_trials, nb_steps):
+    # sub-goal 2: human parameters are given
+    # loads the corresponding model based on the human parameters we're testing on
+    def evaluate_2(self, seed, human_params_all, nb_iters, nb_trials, nb_steps):
+        """
+        human_params_all: list of human parameter dictionaries to test on
+        """
+        
+        np.random.seed(seed)
 
-        human_names = []
+        all_rewards = {"Human params " + str(i): [] for i in range(len(human_params_all))}
 
-        for params in human_params:
-            speed = params['speeds']
-            failing_rate = params['failing_rate']
-            pointing_need = params['pointing_need']
-            losing_attention = params['losing_attention']
-            orientation_change_rate = params['orientation_change_rate']
-            random_movement = params['random_movement']
+        # loop through the humans we want to test on
+        for i in range(len(human_params_all)):
+
+            human_params = human_params_all[i]
+
+            print("TESTING SUBGOAL 2 ON HUMAN PARAMS: ", human_params)
+            
+            speed = human_params['speeds']
+            failing_rate = human_params['failing_rate']
+            pointing_need = human_params['pointing_need']
+            losing_attention = human_params['losing_attention']
+            orientation_change_rate = human_params['orientation_change_rate']
+            random_movement = human_params['random_movement']
+
 
             # ----------------HOW TO PICK THE MODEL BASED ON PARAMETERS----------------- #
+            #
+            #                    ! TO ADAPT TO IMPROVE PERFORMANCE !
             #
             #  To make it simple for now, we ignore speed:
             #
@@ -283,17 +299,192 @@ class MultiModelAgent_Sub():
             #  3.if all prbabilities are easy (p <= 0.1), use H1 model
 
             if (failing_rate >= 0.3 or pointing_need >= 0.3 or
-                losing_attention >= 0.3 or orientation_change_rate >= 0.3 or
-                random_movement >= 0.3):
-                human_names.append('hard_human')
+                        losing_attention >= 0.3 or orientation_change_rate >= 0.3 or
+                        random_movement >= 0.3):
+                print("Picked model H3")
+                params = self.H3
             elif (0.1 < failing_rate < 0.3 or 0.1 < pointing_need < 0.3 or
-                  0.1 < losing_attention < 0.3 or 0.1 < orientation_change_rate < 0.3 or
-                  0.1 < random_movement < 0.3):
-                human_names.append('fast_human')
+                        0.1 < losing_attention < 0.3 or 0.1 < orientation_change_rate < 0.3 or
+                        0.1 < random_movement < 0.3):
+                print("Picked model H2")
+                params = self.H2
             else:
-                human_names.append('basic_human')
+                print("Picked model H1")
+                params = self.H1
+            # --------------------------- MODEL PICKED -------------------------------- #
 
-        self.evaluate_1(self, seed, human_names, nb_iters, nb_trials, nb_steps)
+
+            for _ in range(nb_iters):
+                nav_env = Gridworld()
+                human = Human(**human_params)
+                social_environment = Lab_env_HRI(nav_env, human)
+                environment = Lab_HRI_evaluation(nav_env, human)
+
+                navigation_agent = Epsilon_greedy_MB(
+                    social_environment,
+                    **const.e_greedy_MB_no_explo_param)
+
+                go_to_human_agent = Epsilon_greedy_MB(
+                    social_environment,
+                    **const.e_greedy_MB_no_explo_param)
+
+                e_greedy_MB_param = {'gamma': 0.9,
+                                    'epsilon': 0.05,
+                                    'max_iterations': 1,
+                                    'step_update': 100}
+
+                social_agent = Epsilon_greedy_MB(
+                    social_environment,
+                    **e_greedy_MB_param)
+
+                agent = NavigationInteraction(
+                    environment,
+                    navigation_agent,
+                    social_agent,
+                    go_to_human_agent,
+                    self.nav,
+                    params,     # this makes that the model is trained on the given human
+                    self.goToH
+                )
+                number_of_trials = nb_trials
+                number_of_steps = nb_steps
+
+                visual = {'render': False,
+                        'trial': [],
+                        'task_type': "HRI"}
+
+                rewards = play(environment,
+                            agent,
+                            number_of_trials,
+                            number_of_steps,
+                            visual)
+
+                all_rewards["Human params " + str(i)].append(rewards)
+
+        save_dir = 'all_data/data/all_rewards/'
+        os.makedirs(save_dir, exist_ok=True) 
+
+        np.save("all_data/data/all_rewards/" + str(time.time())+".npy", all_rewards)
+
+        """ 
+        Plot colors correspond to:
+        'Human params 0': 'tab:blue',
+        'Human params 1': 'tab:green',
+        'Human params 2': 'tab:orange'
+        """
+        plot_different_humans(all_rewards, "Multi-Model Sub-goal 2")
+
+
+    # main goal:
+    # give a human instance with unknown parameters
+    # determine which model to use based on observed behavior
+    def evaluate_3(self, seed, humans, nb_iters, nb_trials, nb_steps):
+        """
+        humans: list of Human class instances to test on
+        """
+        
+        np.random.seed(seed)
+
+        all_rewards = {"Human " + str(i): [] for i in range(len(humans))}
+
+        # loop through the humans we want to test on
+        for i in range(len(humans)):
+
+            human = humans[i]
+
+            print("TESTING MAIN GOAL ON HUMAN " + str(i))
+
+            # ----------------------HOW TO PICK THE MODEL BASED ON OBSERVATIONS----------------------- #
+            # 1. have the human have interactions w/ no robot interference for a set number of steps
+            # 2. count the number of times each type of behavior is observed
+            # 3. calculate a probability for each behavior type
+            # 4. pick the model based on the probabilities calculated ( same as in sub-goal 2 )
+            # ---------------------------------------------------------------------------------------- #
+
+            steps_to_observe = 1000
+
+            # check human class to find how each is coded
+            speed_1_count = 0
+            speed_2_count = 0 
+            speed_3_count = 0
+            failing_hellos = 0
+            pointing_needs = 0
+            attention_losses = 0
+            orientation_changes = 0
+            random_movements = 0
+
+            human.new_episode()
+
+            for i in range(steps_to_observe):
+
+                # take a step
+                human.new_episode()
+
+                # attention loss
+
+
+            for _ in range(nb_iters):
+
+                nav_env = Gridworld()
+                social_environment = Lab_env_HRI(nav_env, human)
+                environment = Lab_HRI_evaluation(nav_env, human)
+
+                navigation_agent = Epsilon_greedy_MB(
+                    social_environment,
+                    **const.e_greedy_MB_no_explo_param)
+
+                go_to_human_agent = Epsilon_greedy_MB(
+                    social_environment,
+                    **const.e_greedy_MB_no_explo_param)
+
+                e_greedy_MB_param = {'gamma': 0.9,
+                                    'epsilon': 0.05,
+                                    'max_iterations': 1,
+                                    'step_update': 100}
+
+                social_agent = Epsilon_greedy_MB(
+                    social_environment,
+                    **e_greedy_MB_param)
+
+                agent = NavigationInteraction(
+                    environment,
+                    navigation_agent,
+                    social_agent,
+                    go_to_human_agent,
+                    self.nav,
+                    params,     # this makes that the model is trained on the given human
+                    self.goToH
+                )
+                number_of_trials = nb_trials
+                number_of_steps = nb_steps
+
+                visual = {'render': False,
+                        'trial': [],
+                        'task_type': "HRI"}
+
+                rewards = play(environment,
+                            agent,
+                            number_of_trials,
+                            number_of_steps,
+                            visual)
+
+                all_rewards["Human " + str(i)].append(rewards)
+
+        save_dir = 'all_data/data/all_rewards/'
+        os.makedirs(save_dir, exist_ok=True) 
+
+        np.save("all_data/data/all_rewards/" + str(time.time())+".npy", all_rewards)
+
+        """ 
+        Plot colors correspond to:
+        'Human 0': 'tab:blue',
+        'Human 1': 'tab:green',
+        'Human 2': 'tab:orange'
+        """
+        plot_different_humans(all_rewards, "Multi-Model Agent")
+
+
+
 
 
 # TESTS
@@ -320,6 +511,7 @@ multi_model_agent.evaluate_1(seed, humans_to_test, nb_iters, nb_trials, nb_steps
 
 # ---------------------------------------Sub-Goal 2 TEST----------------------------------------- #
 
+"""
 # evaluate on human parameters that each should map to one of the three models
 
 seed = 42
@@ -358,6 +550,7 @@ nb_steps = 100
 # figure will be saved in: all_data/all_imgs/1D-plots/three_humans"+str(time.time())+".pdf"
 # rename figure after run
 multi_model_agent.evaluate_2(seed, human_params_to_test, nb_iters, nb_trials, nb_steps)
-
+"""
 
 # ---------------------------------------Sub-Goal 3 TEST----------------------------------------- #
+

@@ -11,7 +11,7 @@ def get_mean_and_std(dictionary, condition='agent'):
     a dictionnary of results."""
 
     
-    # used to generate adaptability rewards per step plots
+    # ADDED used to generate adaptability rewards per step plots
     if condition == 'adaptability':
         dictionary = dictionary.item()
         keys = list(dictionary.keys())
@@ -389,7 +389,15 @@ def plot_different_humans(all_rewards, title=''):
               'basic_human_speed_2': 'black',
               'basic_human_speed_3': 'tab:red',
               'social_basic_speed_random':'tab:green',
-              'basic_human_speed_random':'tab:green'}
+              'basic_human_speed_random':'tab:green',
+              # ADDED for AA_further.py plotting
+              'Human params 0': 'tab:blue',
+              'Human params 1': 'tab:green',
+              'Human params 2': 'tab:orange',
+              'Human 0': 'tab:blue',
+              'Human 1': 'tab:green',
+              'Human 2': 'tab:orange'
+              }
     
     for name, reward in all_rewards.items():
         mean_reward, std_reward = np.mean(
