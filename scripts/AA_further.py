@@ -407,26 +407,189 @@ class MultiModelAgent_Sub():
             speed_1_count = 0
             speed_2_count = 0 
             speed_3_count = 0
+
             failing_hellos = 0
+            total_hellos = 0
+
             pointing_needs = 0
+            total_comes = 0
+
             attention_losses = 0
             orientation_changes = 0
             random_movements = 0
 
-            human.new_episode()
+            nav_env = Gridworld()
+            social_environment = Lab_env_HRI(nav_env, human)
 
-            for i in range(steps_to_observe):
+            # ----------------------------- COUNTING SPEEDS ----------------------------- #
 
-                # take a step
-                human.new_episode()
+            social_environment.new_episode()
 
-                # attention loss
+            for _ in range(steps_to_observe):
+                # set the human state such that it is moving towards the robot
+                social_environment.human_state = 3 
+
+                # observe its moving speed
+                old_position = social_environment.human_pos
+
+                if not social_environment.appropriate_distance:
+                    social_environment.human_pos = 0
+                    social_environment.pos = 120
+
+                social_environment.make_step(24)   # stay action
+
+                curr_position = social_environment.human_pos
+
+                movement_size = abs(curr_position - old_position)
+
+                if movement_size == 1:
+                    speed_1_count += 1
+                elif movement_size == 2:
+                    speed_2_count += 1
+                elif movement_size == 3:
+                    speed_3_count += 1
 
 
+            # ----------------------------- COUNTING FAILED HELLOS ----------------------------- #
+
+            social_environment.new_episode()
+
+            for _ in range(steps_to_observe):
+                # saving whether robot can attempt a hello as next action
+                # appropriate_vision = social_environment.H_sees_R and social_environment.R_looks_H
+                # hello_needed = appropriate_vision and not social_environment.H_looks_R
+
+                social_environment.human_state = 0  # human not attentive
+
+                # good interaction distance
+                social_environment.human_pos = 0
+                social_environment.pos = 4
+
+                # making sure a hello is needed
+                social_environment.H_sees_R = True
+                social_environment.R_looks_H = True
+                social_environment.H_looks_R = False
+
+                social_environment.make_step(26)   # hello action
+
+                # did hello work? aka did it change the human's attention
+                if social_environment.human_state == 0:
+                    failing_hellos += 1
+
+
+            # ----------------------------- COUNTING FAILED COME ACTIONS ----------------------------- #
+
+            social_environment.new_episode()
+
+            for _ in range(steps_to_observe):
+                
+                # good interaction distance
+                social_environment.human_pos = 0
+                social_environment.pos = 4
+
+                social_environment.human_state = 1  # human attentive
+                social_environment.make_step(27)   # come action
+
+                # if point need -> human state goes to 2
+                # else it goes to 3 directly and human follows robot
+                if social_environment.human_state == 2:
+                    pointing_needs += 1
+
+
+            # ---------------------- COUNTING ATTENTION LOSSES ---------------------- #
+
+            social_environment.new_episode()
+
+            for _ in range(steps_to_observe):
+                
+                # human attentive
+                social_environment.human_state = 1
+
+                # good interaction distance
+                social_environment.human_pos = 0
+                social_environment.pos = 4
+
+                social_environment.make_step(24)   # stay action
+
+                # did human lose attention
+                if social_environment.human_state == 0:
+                    attention_losses += 1
+
+
+            # ----------------------------- COUNTING ----------------------------- #
+            # ----------------------- ORIENTATION CHANGES ------------------------ #
+            # ------------------------- RANDOM MOVEMENTS ------------------------- #
+
+            social_environment.new_episode()
+
+            for _ in range(steps_to_observe):
+
+                old_orrientation = social_environment.human_orientation
+                old_position = social_environment.human_pos
+
+                # making sure interaction doesn't impact movement/orientation
+                social_environment.human_pos = 0
+                social_environment.pos = 4
+
+                social_environment.make_step(24)   # stay action
+
+                curr_orrientation = social_environment.human_orientation
+                curr_position = social_environment.human_pos
+
+                # did human randomly change orientation or position?
+                if old_orrientation != curr_orrientation:
+                    orientation_changes += 1
+
+                if old_position != curr_position:
+                    random_movements += 1
+
+
+            # approximating human behavior parameters
+            speeds = [speed_1_count/steps_to_observe, speed_2_count/steps_to_observe, speed_3_count/steps_to_observe]
+            failing_rate = failing_hellos/steps_to_observe
+            pointing_need = pointing_needs/steps_to_observe
+            losing_attention = attention_losses/steps_to_observe
+            orientation_change_rate = orientation_changes/steps_to_observe
+            random_movement = random_movements/steps_to_observe
+
+
+            print("------------------ OBSERVED HUMAN PARAMETERS ------------------")
+            print("Real Human Parameters:")
+            print("Speeds: ", human.speeds)
+            print("Failing Rate: ", human.failing_rate) 
+            print("Pointing Need: ", human.pointing_need)
+            print("Losing Attention: ", human.losing_attention)
+            print("Orientation Change Rate: ", human.orientation_change_rate)
+            print("Random Movement: ", human.random_movement)
+
+            print("Approximated Human Parameters:")
+            print("Speeds: ", speeds)
+            print("Failing Rate: ", failing_rate)
+            print("Pointing Need: ", pointing_need)
+            print("Losing Attention: ", losing_attention)
+            print("Orientation Change Rate: ", orientation_change_rate)
+            print("Random Movement: ", random_movement)
+
+
+            # picking model based on approximated parameters
+            if (failing_rate >= 0.3 or pointing_need >= 0.3 or
+                        losing_attention >= 0.3 or orientation_change_rate >= 0.3 or
+                        random_movement >= 0.3):
+                print("Picked model H3")
+                params = self.H3
+            elif (0.1 < failing_rate < 0.3 or 0.1 < pointing_need < 0.3 or
+                        0.1 < losing_attention < 0.3 or 0.1 < orientation_change_rate < 0.3 or
+                        0.1 < random_movement < 0.3):
+                print("Picked model H2")
+                params = self.H2
+            else:
+                print("Picked model H1")
+                params = self.H1
+
+
+            # run interaction with inputted human instance using picked model
             for _ in range(nb_iters):
-
-                nav_env = Gridworld()
-                social_environment = Lab_env_HRI(nav_env, human)
+                
                 environment = Lab_HRI_evaluation(nav_env, human)
 
                 navigation_agent = Epsilon_greedy_MB(
@@ -487,34 +650,33 @@ class MultiModelAgent_Sub():
 
 
 
-# TESTS
+# TEST PARAMS
 
 # load models
 multi_model_agent = MultiModelAgent_Sub()
 multi_model_agent.load_models()
 
-
-# ---------------------------------------Sub-Goal 1 TEST----------------------------------------- #
-
-"""
-# evaluate on all humans
 seed = 42
-humans_to_test = ['basic_human', 'fast_human', 'hard_human']
+
 nb_iters = 10
 nb_trials = 500
 nb_steps = 100
 
+
+# ---------------------------------------Sub-Goal 1 TEST----------------------------------------- #
+
+# evaluate on all humans
+humans_to_test = ['basic_human', 'fast_human', 'hard_human']
+
+
 # figure will be saved in: all_data/all_imgs/1D-plots/three_humans"+str(time.time())+".pdf"
 # rename figure after run
-multi_model_agent.evaluate_1(seed, humans_to_test, nb_iters, nb_trials, nb_steps)
-"""
+# multi_model_agent.evaluate_1(seed, humans_to_test, nb_iters, nb_trials, nb_steps)
+
 
 # ---------------------------------------Sub-Goal 2 TEST----------------------------------------- #
 
-"""
 # evaluate on human parameters that each should map to one of the three models
-
-seed = 42
 
 human_params_to_test = [
     {
@@ -543,14 +705,24 @@ human_params_to_test = [
     }
 ]
 
-nb_iters = 10
-nb_trials = 500
-nb_steps = 100
 
 # figure will be saved in: all_data/all_imgs/1D-plots/three_humans"+str(time.time())+".pdf"
 # rename figure after run
-multi_model_agent.evaluate_2(seed, human_params_to_test, nb_iters, nb_trials, nb_steps)
-"""
+# multi_model_agent.evaluate_2(seed, human_params_to_test, nb_iters, nb_trials, nb_steps)
+
 
 # ---------------------------------------Sub-Goal 3 TEST----------------------------------------- #
 
+# using the same human parameters as sub-goal 2 but already fed into human instances
+# so if we get the same or similar results, then the model succeeded at inferring the human behavior parameters
+
+# create human instances from test 2 parameters
+humans = []
+
+for i in range(len(human_params_to_test)):
+    humans.append(Human(**human_params_to_test[i]))
+
+
+# figure will be saved in: all_data/all_imgs/1D-plots/three_humans"+str(time.time())+".pdf"
+# rename figure after run
+multi_model_agent.evaluate_3(seed, humans, nb_iters, nb_trials, nb_steps)

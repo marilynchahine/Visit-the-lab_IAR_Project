@@ -460,7 +460,11 @@ class Lab_env_HRI(SocialStructure):
         if action < 24:
 
             if self.deterministic :
-                self.pos = self.transitions[self.pos][action]
+                tmp = self.transitions[self.pos][action]
+                if np.ndim(tmp) == 0: # check if scalar
+                    self.pos = tmp
+                else:
+                    self.pos = np.argmax(tmp) # if 144 sized array turn into scalar
             else : 
                 probas = self.transitions[self.pos][action]
                 self.pos = np.random.choice(self.nav_states,
@@ -481,7 +485,11 @@ class Lab_env_HRI(SocialStructure):
                 two_step = self.direction_to_action[self.human_orientation] + 4
 
                 if self.deterministic : 
-                    self.pos = self.transitions[self.human_pos][two_step]
+                    tmp = self.transitions[self.human_pos][two_step]
+                    if np.ndim(tmp) == 0: # check if scalar
+                        self.pos = tmp
+                    else:
+                        self.pos = np.argmax(tmp) # if 144 sized array turn into scalar
                 else : 
                     probabilities = self.transitions[self.human_pos][two_step]
                     goal_state = np.random.choice(self.nav_states, p=probabilities)
@@ -506,7 +514,11 @@ class Lab_env_HRI(SocialStructure):
 
 
         if self.deterministic : 
-            self.human_pos = self.transitions[self.human_pos][self.human_action]
+            tmp = self.transitions[self.human_pos][self.human_action]
+            if np.ndim(tmp) == 0: # check if scalar
+                self.human_pos = tmp
+            else:
+                self.pos = np.argmax(tmp) # if 144 sized array turn into scalar
         else : 
             probas_pos_human = self.transitions[self.human_pos][self.human_action]
             self.human_pos = np.random.choice(self.nav_states, p=probas_pos_human)
