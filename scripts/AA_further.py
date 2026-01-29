@@ -294,18 +294,18 @@ class MultiModelAgent_Sub():
             #
             #  To make it simple for now, we ignore speed:
             #
-            #  1. if any of the probabilities is high ( >= 0.3), use H3 model
-            #  2. if any of the probabilities is medium (0.1 < p < 0.3), use H2 model
+            #  1. if any of the probabilities is high ( >= 0.35), use H3 model
+            #  2. if any of the probabilities is medium (0.1 < p < 0.35), use H2 model
             #  3.if all prbabilities are easy (p <= 0.1), use H1 model
 
-            if (failing_rate >= 0.3 or pointing_need >= 0.3 or
-                        losing_attention >= 0.3 or orientation_change_rate >= 0.3 or
-                        random_movement >= 0.3):
+            if (failing_rate >= 0.35 or pointing_need >= 0.35 or
+                        losing_attention >= 0.35 or orientation_change_rate >= 0.35 or
+                        random_movement >= 0.35):
                 print("Picked model H3")
                 params = self.H3
-            elif (0.1 < failing_rate < 0.3 or 0.1 < pointing_need < 0.3 or
-                        0.1 < losing_attention < 0.3 or 0.1 < orientation_change_rate < 0.3 or
-                        0.1 < random_movement < 0.3):
+            elif (0.1 < failing_rate < 0.35 or 0.1 < pointing_need < 0.35 or
+                        0.1 < losing_attention < 0.35 or 0.1 < orientation_change_rate < 0.35 or
+                        0.1 < random_movement < 0.35):
                 print("Picked model H2")
                 params = self.H2
             else:
@@ -401,19 +401,14 @@ class MultiModelAgent_Sub():
             # 4. pick the model based on the probabilities calculated ( same as in sub-goal 2 )
             # ---------------------------------------------------------------------------------------- #
 
-            steps_to_observe = 1000
+            steps_to_observe = 10000
 
             # check human class to find how each is coded
             speed_1_count = 0
             speed_2_count = 0 
             speed_3_count = 0
-
             failing_hellos = 0
-            total_hellos = 0
-
             pointing_needs = 0
-            total_comes = 0
-
             attention_losses = 0
             orientation_changes = 0
             random_movements = 0
@@ -427,20 +422,23 @@ class MultiModelAgent_Sub():
 
             for _ in range(steps_to_observe):
                 # set the human state such that it is moving towards the robot
-                social_environment.human_state = 3 
+                social_environment.human.human_state = 3
+                social_environment.H_sees_R = True
+                social_environment.R_looks_at_H = True
+                social_environment.H_looks_at_R = True
 
                 # observe its moving speed
-                old_position = social_environment.human_pos
 
-                if not social_environment.appropriate_distance:
-                    social_environment.human_pos = 0
-                    social_environment.pos = 120
+                social_environment.human.human_pos = 0
+                social_environment.pos = 5
+
+                old_distance = social_environment.distance
 
                 social_environment.make_step(24)   # stay action
 
-                curr_position = social_environment.human_pos
+                curr_distance = social_environment.distance
 
-                movement_size = abs(curr_position - old_position)
+                movement_size = abs(curr_distance - old_distance)
 
                 if movement_size == 1:
                     speed_1_count += 1
@@ -449,31 +447,31 @@ class MultiModelAgent_Sub():
                 elif movement_size == 3:
                     speed_3_count += 1
 
-
             # ----------------------------- COUNTING FAILED HELLOS ----------------------------- #
 
             social_environment.new_episode()
 
             for _ in range(steps_to_observe):
                 # saving whether robot can attempt a hello as next action
-                # appropriate_vision = social_environment.H_sees_R and social_environment.R_looks_H
-                # hello_needed = appropriate_vision and not social_environment.H_looks_R
+                # appropriate_vision = social_environment.H_sees_R and social_environment.R_looks_at_H
+                # hello_needed = appropriate_vision and not social_environment.H_looks_at_R
 
-                social_environment.human_state = 0  # human not attentive
+                social_environment.human.human_state = 0  # human not attentive
 
-                # good interaction distance
+                # good interaction distance 
                 social_environment.human_pos = 0
-                social_environment.pos = 4
+                social_environment.pos = 5
 
                 # making sure a hello is needed
                 social_environment.H_sees_R = True
-                social_environment.R_looks_H = True
-                social_environment.H_looks_R = False
+                social_environment.R_looks_at_H = True
+                social_environment.H_looks_at_R = False
 
+                # print(social_environment.appropriate_distance)
                 social_environment.make_step(26)   # hello action
 
                 # did hello work? aka did it change the human's attention
-                if social_environment.human_state == 0:
+                if social_environment.human.human_state == 0:
                     failing_hellos += 1
 
 
@@ -485,14 +483,14 @@ class MultiModelAgent_Sub():
                 
                 # good interaction distance
                 social_environment.human_pos = 0
-                social_environment.pos = 4
+                social_environment.pos = 5
 
-                social_environment.human_state = 1  # human attentive
+                social_environment.human.human_state = 1  # human attentive
                 social_environment.make_step(27)   # come action
 
                 # if point need -> human state goes to 2
                 # else it goes to 3 directly and human follows robot
-                if social_environment.human_state == 2:
+                if social_environment.human.human_state == 2:
                     pointing_needs += 1
 
 
@@ -503,16 +501,16 @@ class MultiModelAgent_Sub():
             for _ in range(steps_to_observe):
                 
                 # human attentive
-                social_environment.human_state = 1
+                social_environment.human.human_state = 1
 
                 # good interaction distance
                 social_environment.human_pos = 0
-                social_environment.pos = 4
+                social_environment.pos = 5
 
                 social_environment.make_step(24)   # stay action
 
                 # did human lose attention
-                if social_environment.human_state == 0:
+                if social_environment.human.human_state == 0:
                     attention_losses += 1
 
 
@@ -529,7 +527,7 @@ class MultiModelAgent_Sub():
 
                 # making sure interaction doesn't impact movement/orientation
                 social_environment.human_pos = 0
-                social_environment.pos = 4
+                social_environment.pos = 50
 
                 social_environment.make_step(24)   # stay action
 
@@ -572,20 +570,19 @@ class MultiModelAgent_Sub():
 
 
             # picking model based on approximated parameters
-            if (failing_rate >= 0.3 or pointing_need >= 0.3 or
-                        losing_attention >= 0.3 or orientation_change_rate >= 0.3 or
-                        random_movement >= 0.3):
+            if (failing_rate >= 0.35 or pointing_need >= 0.35 or
+                        losing_attention >= 0.35 or orientation_change_rate >= 0.35 or
+                        random_movement >= 0.35):
                 print("Picked model H3")
                 params = self.H3
-            elif (0.1 < failing_rate < 0.3 or 0.1 < pointing_need < 0.3 or
-                        0.1 < losing_attention < 0.3 or 0.1 < orientation_change_rate < 0.3 or
-                        0.1 < random_movement < 0.3):
+            elif (0.1 < failing_rate < 0.35 or 0.1 < pointing_need < 0.35 or
+                        0.1 < losing_attention < 0.35 or 0.1 < orientation_change_rate < 0.35 or
+                        0.1 < random_movement < 0.35):
                 print("Picked model H2")
                 params = self.H2
             else:
                 print("Picked model H1")
                 params = self.H1
-
 
             # run interaction with inputted human instance using picked model
             for _ in range(nb_iters):
@@ -637,13 +634,11 @@ class MultiModelAgent_Sub():
         os.makedirs(save_dir, exist_ok=True) 
 
         np.save("all_data/data/all_rewards/" + str(time.time())+".npy", all_rewards)
-
-        """ 
-        Plot colors correspond to:
-        'Human 0': 'tab:blue',
-        'Human 1': 'tab:green',
-        'Human 2': 'tab:orange'
-        """
+        
+        # Plot colors correspond to:
+        # 'Human 0': 'tab:blue',
+        # 'Human 1': 'tab:green',
+        # 'Human 2': 'tab:orange'
         plot_different_humans(all_rewards, "Multi-Model Agent")
 
 
@@ -680,7 +675,7 @@ humans_to_test = ['basic_human', 'fast_human', 'hard_human']
 
 human_params_to_test = [
     {
-        'speeds': [0.34, 0.33 , 0.33],
+        'speeds': [0, 1 , 0],
         'failing_rate': 0.05,
         'pointing_need': 0.05,
         'losing_attention': 0.05,
@@ -688,15 +683,15 @@ human_params_to_test = [
         'random_movement': 0.05
     },
     {
-        'speeds': [0.34, 0.33 , 0.33],
+        'speeds': [0, 1 , 0],
         'failing_rate': 0.2,
         'pointing_need': 0.2,
         'losing_attention': 0.2,
         'orientation_change_rate': 0.2,
         'random_movement': 0.2
     },
-        {
-        'speeds': [0.34, 0.33 , 0.33],
+    {
+        'speeds': [0, 1, 0],
         'failing_rate': 0.3,
         'pointing_need': 0.3,
         'losing_attention': 0.3,
@@ -708,7 +703,7 @@ human_params_to_test = [
 
 # figure will be saved in: all_data/all_imgs/1D-plots/three_humans"+str(time.time())+".pdf"
 # rename figure after run
-# multi_model_agent.evaluate_2(seed, human_params_to_test, nb_iters, nb_trials, nb_steps)
+multi_model_agent.evaluate_2(seed, human_params_to_test, nb_iters, nb_trials, nb_steps)
 
 
 # ---------------------------------------Sub-Goal 3 TEST----------------------------------------- #

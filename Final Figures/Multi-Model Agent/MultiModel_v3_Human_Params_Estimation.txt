@@ -1,0 +1,60 @@
+------------------ OBSERVED HUMAN PARAMETERS ------------------
+
+Real Human Parameters:
+Speeds:  [0, 1, 0]
+Failing Rate:  0.05
+Pointing Need:  0.05
+Losing Attention:  0.05
+Orientation Change Rate:  0.05
+Random Movement:  0.05
+
+Approximated Human Parameters:
+Speeds:  [0.087, 0.0, 0.0001]
+Failing Rate:  0.049
+Pointing Need:  0.0445
+Losing Attention:  0.0516
+Orientation Change Rate:  0.0828
+Random Movement:  0.0353
+
+Picked model H1
+
+
+------------------ OBSERVED HUMAN PARAMETERS ------------------
+
+Real Human Parameters:
+Speeds:  [0, 1, 0]
+Failing Rate:  0.2
+Pointing Need:  0.2
+Losing Attention:  0.2
+Orientation Change Rate:  0.2
+Random Movement:  0.2
+
+Approximated Human Parameters:
+Speeds:  [0.3132, 0.0, 0.0]
+Failing Rate:  0.2041
+Pointing Need:  0.1643
+Losing Attention:  0.2031
+Orientation Change Rate:  0.3088
+Random Movement:  0.1439
+
+Picked model H2
+
+------------------ OBSERVED HUMAN PARAMETERS ------------------
+
+Real Human Parameters:
+Speeds:  [0, 1, 0]
+Failing Rate:  0.3
+Pointing Need:  0.3
+Losing Attention:  0.3
+Orientation Change Rate:  0.3
+Random Movement:  0.3
+
+Approximated Human Parameters:
+Speeds:  [0.4252, 0.0001, 0.0]
+Failing Rate:  0.3003
+Pointing Need:  0.1977
+Losing Attention:  0.296
+Orientation Change Rate:  0.4351
+Random Movement:  0.1903
+
+Picked model H3

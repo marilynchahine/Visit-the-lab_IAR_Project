@@ -464,7 +464,7 @@ class Lab_env_HRI(SocialStructure):
                 if np.ndim(tmp) == 0: # check if scalar
                     self.pos = tmp
                 else:
-                    self.pos = np.argmax(tmp) # if 144 sized array turn into scalar
+                    self.pos = tmp[0] # if 144 sized array turn into scalar
             else : 
                 probas = self.transitions[self.pos][action]
                 self.pos = np.random.choice(self.nav_states,
@@ -472,7 +472,7 @@ class Lab_env_HRI(SocialStructure):
                 
             self.orientation = self.action_to_direction[action]
 
-        # Looking at human (change in orientation)
+        # Looking at tmp[0] (change in orientation)
         if action == 25:
             self.orientation = self.position_angle
         # Teleport the robot to the human visual field, with random orientation.
@@ -489,7 +489,7 @@ class Lab_env_HRI(SocialStructure):
                     if np.ndim(tmp) == 0: # check if scalar
                         self.pos = tmp
                     else:
-                        self.pos = np.argmax(tmp) # if 144 sized array turn into scalar
+                        self.pos = tmp[0] # if 144 sized array turn into scalar
                 else : 
                     probabilities = self.transitions[self.human_pos][two_step]
                     goal_state = np.random.choice(self.nav_states, p=probabilities)
@@ -518,7 +518,7 @@ class Lab_env_HRI(SocialStructure):
             if np.ndim(tmp) == 0: # check if scalar
                 self.human_pos = tmp
             else:
-                self.pos = np.argmax(tmp) # if 144 sized array turn into scalar
+                self.human_pos = tmp[0] # if 144 sized array turn into scalar
         else : 
             probas_pos_human = self.transitions[self.human_pos][self.human_action]
             self.human_pos = np.random.choice(self.nav_states, p=probas_pos_human)
